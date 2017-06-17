@@ -1,17 +1,20 @@
+import datetime
 import logging
-#import requests
+import re
 
+import requests
+from bs4 import BeautifulSoup
 from telegram.ext import Updater, CommandHandler
 
-token = 'token'
+token = 'bottoken'
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
-clave = 'ingenieria.uchile'
-validez = 'Desde el 01 de junio del 2017'
+claves = ''
+ultimaActualizacion = datetime.datetime.min
 
 
 def error(bot, update, error):
@@ -19,12 +22,39 @@ def error(bot, update, error):
 
 
 def wifi(bot, update):
-    reply = clave + '\n' + validez
-    update.message.reply_text(reply)
+    if diferenciaMeses() >= 1:
+        actualizarClaves()
+    update.message.reply_text(claves)
 
 
-#def actualizarClave():
-#    req = requests.get('https://servicios.cec.uchile.cl/')
+def diferenciaMeses():
+    global ultimaActualizacion
+    now = datetime.datetime.now()
+    return (now.year - ultimaActualizacion.year) * 12 + now.month - ultimaActualizacion.month
+
+
+def actualizarClaves():
+    global claves
+    global ultimaActualizacion
+    payload = {'usuario': 'usuarioCEC',
+               'contrasena': 'contraCECnia'}
+    # login al cec
+    r = requests.post('https://servicios.cec.uchile.cl/index.php', data=payload)
+    # obtener pagina con datos de invitado
+    data = requests.get('https://servicios.cec.uchile.cl/wifi-invitados.php', cookies=r.cookies)
+    # crear parser
+    soup = BeautifulSoup(data.text, 'html.parser')
+    # obtener tabla con los datos clave - validez
+    table = soup.find_all('table')[0].find('table').find_all('td')
+    # eliminar titulos
+    table[0:2] = []
+    for element in table:
+        # regex para obtener los datos
+        regex = re.compile("(?<=')[^']+(?=')")
+        claves += regex.findall(str(element.renderContents()))[0] + '\n'
+    # actualizar fecha de la ultima actualizacion
+    ultimaActualizacion = datetime.datetime.now()
+    return claves
 
 
 def main():
