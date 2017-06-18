@@ -6,7 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 from telegram.ext import Updater, CommandHandler
 
-token = 'bottoken'
+token = 'token'
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -48,12 +48,15 @@ def actualizarClaves():
     table = soup.find_all('table')[0].find('table').find_all('td')
     # eliminar titulos
     table[0:2] = []
+    claves2 = ''
     for element in table:
         # regex para obtener los datos
         regex = re.compile("(?<=')[^']+(?=')")
-        claves += regex.findall(str(element.renderContents()))[0] + '\n'
+        claves2 += regex.findall(str(element.renderContents()))[0] + '\n'
     # actualizar fecha de la ultima actualizacion
-    ultimaActualizacion = datetime.datetime.now()
+    if claves2 != claves:
+        claves = claves2
+        ultimaActualizacion = datetime.datetime.now()
     return claves
 
 
