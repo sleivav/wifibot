@@ -27,6 +27,11 @@ def wifi(bot, update):
     update.message.reply_text(claves)
 
 
+def force(bot, update):
+    actualizarClaves()
+    update.message.reply_text("Las contraseñas se actualizaron correctamente")
+
+
 def diferenciaMeses():
     global ultimaActualizacion
     now = datetime.datetime.now()
@@ -65,6 +70,7 @@ def main():
     dp = updater.dispatcher
     # respuesta para comando /wifi
     dp.add_handler(CommandHandler("wifi", wifi))
+    dp.add_handler(CommandHandler("force", force))
     dp.add_error_handler(error)
     # iniciar el bot
     updater.start_polling()
