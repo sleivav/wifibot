@@ -46,11 +46,11 @@ def actualizarClaves():
     # login al cec
     r = requests.post('https://servicios.cec.uchile.cl/index.php', data=payload)
     # obtener pagina con datos de invitado
-    data = requests.get('https://servicios.cec.uchile.cl/wifi-invitados.php', cookies=r.cookies)
+    data = requests.get('https://servicios.cec.uchile.cl/wifiInvitados_sistemaAntiguo.php', cookies=r.cookies)
     # crear parser
     soup = BeautifulSoup(data.text, 'html.parser')
     # obtener tabla con los datos clave - validez
-    table = soup.find_all('table')[0].find('table').find_all('td')
+    table = soup.find_all('table')[1].find_all('td')
     # eliminar titulos
     table[0:2] = []
     claves2 = ''
